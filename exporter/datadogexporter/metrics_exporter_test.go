@@ -83,7 +83,7 @@ func TestNewExporter(t *testing.T) {
 
 func Test_metricsExporter_PushMetricsData(t *testing.T) {
 	attrs := map[string]string{
-		conventions.AttributeDeploymentEnvironment: "dev",
+		conventions.AttributeDeploymentEnvironment: "test",
 		"custom_attribute":                         "custom_value",
 	}
 	newConfig := func(t *testing.T, endpoint string, hostTags []string, histogramMode HistogramMode) *Config {
@@ -141,21 +141,21 @@ func Test_metricsExporter_PushMetricsData(t *testing.T) {
 						"points": []interface{}{[]interface{}{float64(0), float64(222)}},
 						"type":   "gauge",
 						"host":   "test-host",
-						"tags":   []interface{}{"env:dev"},
+						"tags":   []interface{}{"env:dev", "env:test"},
 					},
 					map[string]interface{}{
 						"metric": "double.histogram.bucket",
 						"points": []interface{}{[]interface{}{float64(0), float64(2)}},
 						"type":   "count",
 						"host":   "test-host",
-						"tags":   []interface{}{"lower_bound:-inf", "upper_bound:0", "env:dev"},
+						"tags":   []interface{}{"lower_bound:-inf", "upper_bound:0", "env:dev", "env:test"},
 					},
 					map[string]interface{}{
 						"metric": "double.histogram.bucket",
 						"points": []interface{}{[]interface{}{float64(0), float64(18)}},
 						"type":   "count",
 						"host":   "test-host",
-						"tags":   []interface{}{"lower_bound:0", "upper_bound:inf", "env:dev"},
+						"tags":   []interface{}{"lower_bound:0", "upper_bound:inf", "env:dev", "env:test"},
 					},
 					map[string]interface{}{
 						"metric": "otel.datadog_exporter.metrics.running",
@@ -184,7 +184,7 @@ func Test_metricsExporter_PushMetricsData(t *testing.T) {
 						"points": []interface{}{[]interface{}{float64(0), float64(222)}},
 						"type":   "gauge",
 						"host":   "test-host",
-						"tags":   []interface{}{"env:dev"},
+						"tags":   []interface{}{"env:dev", "env:test"},
 					},
 					map[string]interface{}{
 						"metric": "otel.datadog_exporter.metrics.running",
@@ -200,7 +200,7 @@ func Test_metricsExporter_PushMetricsData(t *testing.T) {
 					{
 						Metric: "double.histogram",
 						Host:   "test-host",
-						Tags:   []string{"env:dev"},
+						Tags:   []string{"env:dev", "env:test"},
 						Dogsketches: []gogen.SketchPayload_Sketch_Dogsketch{
 							{
 								Cnt: 20,
@@ -230,21 +230,21 @@ func Test_metricsExporter_PushMetricsData(t *testing.T) {
 						"points": []interface{}{[]interface{}{float64(0), float64(222)}},
 						"type":   "gauge",
 						"host":   "test-host",
-						"tags":   []interface{}{"env:dev", "key1:value1", "key2:value2"},
+						"tags":   []interface{}{"env:dev", "env:test", "key1:value1", "key2:value2"},
 					},
 					map[string]interface{}{
 						"metric": "double.histogram.bucket",
 						"points": []interface{}{[]interface{}{float64(0), float64(2)}},
 						"type":   "count",
 						"host":   "test-host",
-						"tags":   []interface{}{"lower_bound:-inf", "upper_bound:0", "env:dev", "key1:value1", "key2:value2"},
+						"tags":   []interface{}{"lower_bound:-inf", "upper_bound:0", "env:dev", "env:test", "key1:value1", "key2:value2"},
 					},
 					map[string]interface{}{
 						"metric": "double.histogram.bucket",
 						"points": []interface{}{[]interface{}{float64(0), float64(18)}},
 						"type":   "count",
 						"host":   "test-host",
-						"tags":   []interface{}{"lower_bound:0", "upper_bound:inf", "env:dev", "key1:value1", "key2:value2"},
+						"tags":   []interface{}{"lower_bound:0", "upper_bound:inf", "env:dev", "env:test", "key1:value1", "key2:value2"},
 					},
 					map[string]interface{}{
 						"metric": "otel.datadog_exporter.metrics.running",
@@ -347,6 +347,7 @@ func createTestMetrics(additionalAttributes map[string]string) pmetric.Metrics {
 	dpInt := dpsInt.AppendEmpty()
 	dpInt.SetTimestamp(seconds(0))
 	dpInt.SetIntVal(222)
+	dpInt.Attributes().InsertString("env", "dev")
 
 	// Histogram (delta)
 	met = metricsArray.AppendEmpty()
@@ -360,6 +361,7 @@ func createTestMetrics(additionalAttributes map[string]string) pmetric.Metrics {
 	dpDoubleHist.SetBucketCounts(pcommon.NewImmutableUInt64Slice([]uint64{2, 18}))
 	dpDoubleHist.SetExplicitBounds(pcommon.NewImmutableFloat64Slice([]float64{0}))
 	dpDoubleHist.SetTimestamp(seconds(0))
+	dpDoubleHist.Attributes().InsertString("env", "dev")
 
 	return md
 }
